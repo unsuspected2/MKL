@@ -3,13 +3,13 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-
 
 class Log extends Model
 {
-    use HasFactory;
-   
     protected $table = 'log';
-    protected $guarded = [];
+    protected $fillable = ['user_id', 'ip', 'accao', 'descricao'];
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'id_user');
+    }
 }

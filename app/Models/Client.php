@@ -3,15 +3,26 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-/* use Illuminate\Database\Eloquent\SoftDeletes; */
 
 class Client extends Model
 {
-    
-    use HasFactory;
-    /* use SoftDeletes; */
     protected $table = 'client';
-    protected $guarded = [];
 
+    protected $fillable = [
+        'nome',
+        'numero',
+        'provincia',
+        'imagem',
+    ];
+
+    // Relacionamentos
+    public function sales()
+    {
+        return $this->hasMany(Sale::class, 'id_cliente');
+    }
+
+    public function contracts()
+    {
+        return $this->hasMany(Contract::class, 'client_id');
+    }
 }

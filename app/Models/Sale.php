@@ -3,13 +3,29 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-/* use Illuminate\Database\Eloquent\SoftDeletes; */
 
 class Sale extends Model
 {
-    use HasFactory;
-   /*  use SoftDeletes; */
-    protected $table = 'sale';
-    protected $guarded = [];
+   protected $table = 'sale';
+    protected $fillable = ['quantidade', 'data_venda', 'id_cliente', 'id_product'];
+
+    public function client()
+    {
+        return $this->belongsTo(Client::class, 'id_cliente');
+    }
+
+    public function product()
+    {
+        return $this->belongsTo(Product::class, 'id_product');
+    }
+
+    public function financials()
+    {
+        return $this->hasMany(Financial::class, 'sale_id');
+    }
+
+    public function taxes()
+    {
+        return $this->hasMany(Tax::class, 'sale_id');
+    }
 }

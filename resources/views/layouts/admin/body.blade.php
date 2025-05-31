@@ -20,6 +20,7 @@
     </div>
   </div>
   @include('layouts.admin.scripts')
+  @yield('scripts')
 </body>
 
 </html>
