@@ -5,7 +5,7 @@
             <select class="form-control @error('employee_id') is-invalid @enderror" name="employee_id" required>
                 <option value="" disabled {{ old('employee_id', isset($beneficio) ? $beneficio->employee_id : '') == '' ? 'selected' : '' }}>Selecione</option>
                 @foreach ($data['funcionarios'] as $funcionario)
-                    <option value="{{ $funcionario->id }}" {{ old('employee_id', isset($beneficio) ? $beneficio->employee_id : '') == $funcionario->id ? 'selected' : '' }}>{{ $funcionario->nome }}</option>
+                    <option value="{{ $funcionario->id }}" {{ old('employee_id', isset($beneficio) ? $beneficio->employee_id : '') == $funcionario->id ? 'selected' : '' }}>{{ $funcionario->name }}</option>
                 @endforeach
             </select>
             @error('employee_id')

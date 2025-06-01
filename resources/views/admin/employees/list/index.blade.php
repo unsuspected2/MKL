@@ -51,11 +51,11 @@
                                                 </div>
                                             </td>
                                             <td>{{ $funcionario->id }}</td>
-                                            <td>{{ $funcionario->nome }}</td>
+                                            <td>{{ $funcionario->name }}</td>
                                             <td>{{ $funcionario->email }}</td>
-                                            <td>{{ $funcionario->departamento }}</td>
-                                            <td>{{ $funcionario->cargo }}</td>
-                                            <td>{{ date('d/m/y', strtotime($funcionario->data_contratacao)) }}</td>
+                                            <td>{{ $funcionario->department }}</td>
+                                            <td>{{ $funcionario->position }}</td>
+                                            <td>{{ date('d/m/y', strtotime($funcionario->hire_date)) }}</td>
                                             <td>
                                                 <button class="btn btn-sm dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                                     <span class="text-muted sr-only">Acção</span>

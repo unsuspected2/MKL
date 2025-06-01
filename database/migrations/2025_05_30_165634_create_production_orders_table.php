@@ -16,6 +16,7 @@ return new class extends Migration
             $table->date('end_date')->nullable();
             $table->string('status'); // e.g., Scheduled, In Progress, Completed
             $table->text('raw_materials')->nullable(); // JSON or text for raw materials used
+            $table->softDeletes();
             $table->timestamps();
         });
     }

@@ -117,6 +117,7 @@ class MainController extends Controller
 
     public function list_sales()
     {
+        // Obter todas as vendas com joins para cliente e produto
         $data['vendas'] = Sale::join('client', 'sale.id_cliente', 'client.id')
             ->join('product', 'sale.id_product', 'product.id')
             ->select(
@@ -127,15 +128,23 @@ class MainController extends Controller
             )
             ->orderBy('sale.id', 'desc')
             ->get();
+
+        // Obter clientes e produtos para os dropdowns do formulário
+        $data['clientes'] = Client::orderBy('nome')->get();
+        $data['produtos'] = Product::with('supplier') // Carrega o fornecedor relacionado se necessário
+            ->orderBy('nome')
+            ->get();
+
         return view('admin.sales.table', ['data' => $data]);
     }
+
 
     public function list_logs()
     {
         $data['user'] = auth()->user();
-        $data['logs'] = Log::join('users', 'logs.id_user', 'users.id')
-            ->select('logs.*', 'users.id as id_user', 'users.name as nome_user')
-            ->orderBy('logs.id', 'desc')
+        $data['logs'] = Log::join('users', 'log.user_id', 'users.id')
+            ->select('log.*', 'users.id as user_id', 'users.name as nome_user')
+            ->orderBy('log.id', 'desc')
             ->get();
         return view('admin.logs.table', ['data' => $data]);
     }

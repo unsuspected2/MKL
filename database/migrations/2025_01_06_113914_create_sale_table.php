@@ -15,9 +15,10 @@ return new class extends Migration
             $table->id();
             $table->integer('quantidade');
             $table->date('data_venda');
-            $table->timestamps();
             $table->foreignId('id_cliente')->constrained()->onDelete('cascade')->references('id')->on('client');
             $table->foreignId('id_product')->constrained()->onDelete('cascade')->references('id')->on('product');
+            $table->softDeletes();
+            $table->timestamps();
         });
     }
 

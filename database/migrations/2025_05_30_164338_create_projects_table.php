@@ -17,6 +17,7 @@ return new class extends Migration
             $table->string('status'); // e.g., Planning, In Progress, Completed
             $table->decimal('budget', 12, 2);
             $table->foreignId('responsible_id')->constrained('employees')->onDelete('cascade');
+            $table->softDeletes();
             $table->timestamps();
         });
     }

@@ -18,7 +18,7 @@ return new class extends Migration
             $table->string('accao');
             $table->text('descricao');
             $table->timestamps();
-            $table->foreignId('id_user')->constrained()->onDelete('cascade')->references('id')->on('users');
+            $table->foreignId('user_id')->constrained()->onDelete('cascade')->references('id')->on('users');
 
         });
     }

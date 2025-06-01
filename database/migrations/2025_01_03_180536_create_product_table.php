@@ -15,13 +15,15 @@ return new class extends Migration
             $table->id();
             $table->string('nome');
             $table->text('descricao');
-            $table->decimal('preco', 10, 2);
-            $table->integer('quantidade_disponivel');
+            $table->decimal('preco', 10, 2)->default(0);
+            $table->integer('quantidade_disponivel')->default(0);
             $table->string('categoria');
-            $table->string('imagem');
+            $table->string('imagem')->default('default.jpg');
             $table->timestamps();
-            $table->foreignId('id_fornecedor')->constrained()->onDelete('cascade')->references('id')->on('supplier');
-
+            $table->softDeletes();
+            $table->foreignId('id_fornecedor')
+                ->constrained('supplier')
+                ->onDelete('cascade');
         });
     }
 

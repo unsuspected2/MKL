@@ -16,6 +16,7 @@ return new class extends Migration
             $table->string('status'); // e.g., Pending, Paid, Overdue
             $table->text('description')->nullable();
             $table->foreignId('sale_id')->nullable()->constrained('sale')->onDelete('set null');
+            $table->softDeletes();
             $table->timestamps();
         });
     }

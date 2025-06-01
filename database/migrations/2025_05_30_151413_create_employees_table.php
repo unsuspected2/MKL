@@ -18,6 +18,7 @@ return new class extends Migration
             $table->date('hire_date');
             $table->string('position');
             $table->string('image')->nullable();
+            $table->softDeletes();
             $table->timestamps();
         });
     }

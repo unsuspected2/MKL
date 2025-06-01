@@ -53,7 +53,7 @@
                                             <td>{{ $beneficio->benefit_type }}</td>
                                             <td>{{ number_format($beneficio->amount, 2, ',', '.') }}</td>
                                             <td>{{ date('d/m/y', strtotime($beneficio->start_date)) }}</td>
-                                            <td>{{ $beneficio->employee->nome ?? 'N/A' }}</td>
+                                            <td>{{ $beneficio->employee->name ?? 'N/A' }}</td>
                                             <td>
                                                 <button class="btn btn-sm dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                                     <span class="text-muted sr-only">Acção</span>

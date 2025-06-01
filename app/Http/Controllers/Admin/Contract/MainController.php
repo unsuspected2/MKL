@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin\Contract;
 use App\Http\Controllers\Controller;
 use App\Models\Contract;
 use App\Models\Client;
+use App\Models\Employee;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
@@ -14,7 +15,9 @@ class MainController extends Controller
     {
         $contratos = Contract::with('client')->get();
         $clientes = Client::all();
-        return view('admin.contracts.list.index', ['data' => ['contratos' => $contratos, 'clientes' => $clientes]]);
+        $financeiro = Employee::all();
+        
+        return view('admin.contracts.list.index', ['data' => ['contratos' => $contratos, 'clientes' => $clientes, 'financeiro' => $financeiro]]);
     }
 
     public function store(Request $request)

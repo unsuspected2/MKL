@@ -17,6 +17,7 @@ return new class extends Migration
             $table->string('status'); // e.g., Active, Expired, Terminated
             $table->foreignId('client_id')->constrained('client')->onDelete('cascade');
             $table->string('document_path')->nullable(); // Path to stored contract file
+            $table->softDeletes();
             $table->timestamps();
         });
     }

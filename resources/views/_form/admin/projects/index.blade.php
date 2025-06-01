@@ -73,7 +73,7 @@
             <select class="form-control @error('responsible_id') is-invalid @enderror" name="responsible_id" required>
                 <option value="" disabled {{ old('responsible_id', isset($projeto) ? $projeto->id_responsavel : '') == '' ? 'selected' : '' }}>Selecione</option>
                 @foreach ($data['funcionarios'] as $funcionario)
-                    <option value="{{ $funcionario->id }}" {{ old('responsible_id', isset($projeto) ? $projeto->id_responsavel : '') == $funcionario->id ? 'selected' : '' }}>{{ $funcionario->nome }}</option>
+                    <option value="{{ $funcionario->id }}" {{ old('responsible_id', isset($projeto) ? $projeto->id_responsavel : '') == $funcionario->id ? 'selected' : '' }}>{{ $funcionario->name }}</option>
                 @endforeach
             </select>
             @error('responsible_id')

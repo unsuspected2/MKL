@@ -6,8 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Benefit;
 use App\Models\Employee;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
-
+use App\Models\Log;
 class MainController extends Controller
 {
     public function index()

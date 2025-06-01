@@ -15,6 +15,7 @@ return new class extends Migration
             $table->date('recorded_at');
             $table->string('region')->nullable(); // e.g., Province or Country
             $table->text('notes')->nullable();
+            $table->softDeletes();
             $table->timestamps();
         });
     }

@@ -52,12 +52,12 @@
                                                 </div>
                                             </td>
                                             <td>{{ $projeto->id }}</td>
-                                            <td>{{ $projeto->nome }}</td>
-                                            <td>{{ Str::limit($projeto->descricao, 50) }}</td>
-                                            <td>{{ date('d/m/y', strtotime($projeto->data_inicio)) }}</td>
+                                            <td>{{ $projeto->name }}</td>
+                                            <td>{{ Str::limit($projeto->description, 50) }}</td>
+                                            <td>{{ date('d/m/y', strtotime($projeto->start_date)) }}</td>
                                             <td>{{ $projeto->status }}</td>
-                                            <td>{{ number_format($projeto->orcamento, 2, ',', '.') }}</td>
-                                            <td>{{ $projeto->responsavel->nome }}</td>
+                                            <td>{{ number_format($projeto->budget, 2, ',', '.') }}</td>
+                                            <td>{{ $projeto->responsible->name }}</td>
                                             <td>
                                                 <button class="btn btn-sm dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                                     <span class="text-muted sr-only">Acção</span>

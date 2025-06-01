@@ -6,24 +6,33 @@ use App\Models\Product;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Log;
-use App\Models\User;
+use App\Models\Supplier;
 
 class MainController extends Controller
 {
     /**
-     * Display a listing of the resource.
+     * Validação comum para store e update
      */
-    public function index()
+
+    public function list_products()
     {
-        //
+        $data['produtos'] = Product::join('supplier', 'product.id_fornecedor', 'supplier.id')
+            ->select('product.*', 'supplier.nome as nome_fornecedor')
+            ->orderBy('product.id', 'desc')
+            ->get();
+        return view('admin.products.table', ['data' => $data]);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
+    protected function validateProduct(Request $request)
     {
-        //
+        return $request->validate([
+            'name' => 'required|string|max:255',
+            'inform' => 'required|string',
+            'price' => 'required|numeric|min:0',
+            'quantity' => 'required|integer|min:0',
+            'category' => 'required|string|max:255',
+            'supplier_name' => 'required|exists:supplier,id'
+        ]);
     }
 
     /**
@@ -31,83 +40,76 @@ class MainController extends Controller
      */
     public function store(Request $request)
     {
-           /* CRIAÇÃO DE UM NOVO RESITRO NA TABELA Produto*/
+        $validated = $this->validateProduct($request);
 
-        $produto = Product::create([
-            'nome' => $request->name,      // Atribua o valor do campo 'name' do request
-            'descricao' => $request->inform,    // Atribua o valor do campo 'descricao' do request
-            'preco' => $request->price ,// Atribua o valor do campo 'price' do request
-            'quantidade_disponivel' => $request->quantity,    // Atribua o valor do campo 'quntity' do request
-            'categoria' => $request->category,    // Atribua o valor do campo 'quntity' do request
-            'imagem' => 'valor_teste',    // Atribua o valor do campo 'imagem' do request
-            'id_fornecedor' => $request->supplier_name, // Cadasrada o Id do forncedor para e na view sera exibido seu nome!
+        try {
+            $produto = Product::create([
+                'nome' => $validated['name'],
+                'descricao' => $validated['inform'],
+                'preco' => $validated['price'],
+                'quantidade_disponivel' => $validated['quantity'],
+                'categoria' => $validated['category'],
+                'imagem' => 'default.jpg', // Valor temporário
+                'id_fornecedor' => $validated['supplier_name'],
+            ]);
 
+            // Log
+            $user_id = auth()->id();
+            Log::create([
+                'user_id' => $user_id,
+                'ip' => $request->ip(),
+                'accao' => 'Cadastramento',
+                'id_user' => $user_id,
+                'descricao' => "Usuário {$user_id} cadastrou o produto {$produto->nome} com ID {$produto->id}.",
+            ]);
 
-        ]);
+            return redirect()->route('admin.gestao.produtos')
+                   ->with('produtoCadastrado', 'Produto cadastrado com sucesso!');
 
-        $user_id= auth()->id();  
-  
-
-        /* CRIAÇÃO DO LOG */
-        Log::create([
-            'user_id' =>$user_id,
-            'ip' => $request->ip(),
-            'accao' => 'Cadastramento',
-            'id_user' => $user_id,
-            'descricao' => "Usuário {$user_id} cadastrou o produto {$produto->nome} com ID {$produto->id}.",
-        ]);
-
-        return redirect()->back()->with('produtoCadastrado', 'Cadastrado');
-    }
-
-    /**
-     * Display the specified resource.
-     */
-    public function show(Product $product)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(Product $product)
-    {
-        //
+        } catch (\Exception $e) {
+            return redirect()->back()
+                   ->withInput()
+                   ->withErrors(['error' => 'Erro ao cadastrar produto: ' . $e->getMessage()]);
+        }
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request,$id)
-
+    public function update(Request $request, $id)
     {
-         // Localizar o cliente
-    $produto = Product::findOrFail($id);
+        $validated = $this->validateProduct($request);
 
-    // Atualizar os dados do cliente
-    $produto->update([
-        'nome' => $request->name,      // Atribua o valor do campo 'name' do request
-        'descricao' => $request->inform,    // Atribua o valor do campo 'descricao' do request
-        'preco' => $request->price ,// Atribua o valor do campo 'price' do request
-        'quantidade_disponivel' => $request->quantity,    // Atribua o valor do campo 'quntity' do request
-        'categoria' => $request->category,    // Atribua o valor do campo 'quntity' do request
-        'imagem' => 'valor_teste',    // Atribua o valor do campo 'imagem' do request
-        'id_fornecedor' => $request->supplier_name, // Cadasrada o Id do forncedor para e na view sera exibido seu nome!
-    ]);
+        try {
+            $produto = Product::findOrFail($id);
 
-    // Criar log
-    $user_id = auth()->id();
-    Log::create([
-        'user_id' => $user_id,
-        'ip' => $request->ip(),
-        'accao' => 'Atualização',
-        'id_user' => $user_id,
-        'descricao' => "Usuário {$user_id} atualizou o produto {$produto->nome} com ID {$produto->id}.",
-    ]);
+            $produto->update([
+                'nome' => $validated['name'],
+                'descricao' => $validated['inform'],
+                'preco' => $validated['price'],
+                'quantidade_disponivel' => $validated['quantity'],
+                'categoria' => $validated['category'],
+                'id_fornecedor' => $validated['supplier_name'],
+            ]);
 
-    return redirect()->back()->with('clienteAtualizado', 'Atualizado');
+            // Log
+            $user_id = auth()->id();
+            Log::create([
+                'user_id' => $user_id,
+                'ip' => $request->ip(),
+                'accao' => 'Atualização',
+                'id_user' => $user_id,
+                'descricao' => "Usuário {$user_id} atualizou o produto {$produto->nome} com ID {$produto->id}.",
+            ]);
 
+            return redirect()->route('admin.gestao.produtos')
+                   ->with('produtoAtualizado', 'Produto atualizado com sucesso!');
+
+        } catch (\Exception $e) {
+            return redirect()->back()
+                   ->withInput()
+                   ->withErrors(['error' => 'Erro ao atualizar produto: ' . $e->getMessage()]);
+        }
     }
 
     /**
@@ -115,25 +117,28 @@ class MainController extends Controller
      */
     public function destroy(Request $request, $id)
     {
-          // Localizar o produto
-    $produto = Product::findOrFail($id);
+        try {
+            $produto = Product::findOrFail($id);
+            $nomeProduto = $produto->nome;
 
-    // Capturar o nome do produto antes de excluir
-    $nomeProduto = $produto->nome;
+            $produto->delete();
 
-    // Excluir o produto
-    $produto->delete();
+            // Log
+            $user_id = auth()->id();
+            Log::create([
+                'user_id' => $user_id,
+                'ip' => $request->ip(),
+                'accao' => 'Eliminação',
+                'id_user' => $user_id,
+                'descricao' => "Usuário {$user_id} eliminou o produto {$nomeProduto} com ID {$id}.",
+            ]);
 
-    // Criar log
-    $user_id = auth()->id();
-    Log::create([
-        'user_id' => $user_id,
-        'ip' => $request->ip(),
-        'accao' => 'Eliminação',
-        'id_user' => $user_id,
-        'descricao' => "Usuário {$user_id} eliminou o produto {$nomeProduto} com ID {$id}.",
-    ]);
+            return redirect()->route('admin.gestao.produtos')
+                   ->with('produtoRemovido', 'Produto removido com sucesso!');
 
-    return redirect()->back()->with('produtoEliminado', 'Produto eliminado com sucesso.');
+        } catch (\Exception $e) {
+            return redirect()->back()
+                   ->withErrors(['error' => 'Erro ao remover produto: ' . $e->getMessage()]);
+        }
     }
 }

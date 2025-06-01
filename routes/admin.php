@@ -29,7 +29,7 @@ Route::group([
         });
 
         Route::prefix('/produtos')->group(function () {
-            Route::get('/', ['as' => 'admin.gestao.produtos', 'uses' => 'Admin\MainController@list_products']);
+            Route::get('/', ['as' => 'admin.gestao.produtos', 'uses' => 'Admin\Product\MainController@list_products']);
             Route::post('cadastrar', ['as' => 'admin.gestao.produto.cadastrar', 'uses' => 'Admin\Product\MainController@store']);
             Route::post('editar/{id}', ['as' => 'admin.gestao.produto.editar', 'uses' => 'Admin\Product\MainController@update']);
             Route::get('apagar/{id}', ['as' => 'admin.gestao.produto.apagar', 'uses' => 'Admin\Product\MainController@destroy']);
@@ -43,9 +43,11 @@ Route::group([
         });
 
         Route::prefix('/vendas')->group(function () {
-            Route::get('/', ['as' => 'admin.gestao.vendas', 'uses' => 'Admin\MainController@list_sales']);
+            Route::get('/', ['as' => 'admin.gestao.vendas', 'uses' => 'Admin\Sale\MainController@index']);
+            Route::get('/criar', ['as' => 'admin.gestao.venda.criar', 'uses' => 'Admin\Sale\MainController@create']);
             Route::post('cadastrar', ['as' => 'admin.gestao.venda.cadastrar', 'uses' => 'Admin\Sale\MainController@store']);
-            Route::post('editar/{id}', ['as' => 'admin.gestao.venda.editar', 'uses' => 'Admin\Sale\MainController@update']);
+            Route::get('/editar/{id}', ['as' => 'admin.gestao.venda.editar', 'uses' => 'Admin\Sale\MainController@edit']);
+            Route::post('/atualizar/{id}', ['as' => 'admin.gestao.venda.atualizar', 'uses' => 'Admin\Sale\MainController@update']);
             Route::get('apagar/{id}', ['as' => 'admin.gestao.venda.apagar', 'uses' => 'Admin\Sale\MainController@destroy']);
         });
 

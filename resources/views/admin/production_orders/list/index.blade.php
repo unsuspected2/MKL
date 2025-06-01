@@ -3,76 +3,74 @@
 @section('title', 'Ordens de Produção')
 
 @section('conteudo')
-<div class="container-fluid">
-    <center><h3><strong><b>Ordens de Produção</b></strong></h3></center>
+    <div class="container-fluid">
+        <div class="mb-4 text-center">
+            <h3><strong>Ordens de Produção</strong></h3>
+        </div>
 
-    <div class="row justify-content-center">
-        <div class="col-12">
-            <div class="row my-4">
-                <div class="col-md-12">
-                    <div class="card shadow">
-                        <div class="row">
-                            <div class="col-6">
-                                <div class="row" style="display: flex; justify-content: flex-end">
-                                    <div class="col-4 mt-3 mb-1 mr-3">
+        <div class="row justify-content-center">
+            <div class="col-12">
+                <div class="my-4">
+                    <div class="shadow card">
+                        <div class="card-header">
+                            <div class="row" style="display: flex; justify-content: flex-end">
+                                    <div class="mt-3 mb-1 mr-3 col-4">
                                         <form action="">
                                             <input type="search" name="" id="" placeholder="Pesquisar..." class="form-control">
                                         </form>
                                     </div>
-                                    <div class="col-6 mt-3">
+                                    <div class="mt-3 col-6">
                                         <button class="btn btn-primary" data-toggle="modal" data-target="#modalCreate" data-whatever="@mdo">
-                                            <i class="ti ti-plus fe-16 m-1"></i> Cadastrar
+                                            <i class="m-1 ti ti-plus fe-16"></i> Cadastrar
                                         </button>
                                     </div>
                                 </div>
-                            </div>
                         </div>
                         <div class="card-body">
                             <table class="table datatables table-hover" id="dataTable-1">
                                 <thead>
                                     <tr>
-                                        <th></th>
-                                        <th>ID</th>
-                                        <th>Produto</th>
-                                        <th>Quantidade</th>
-                                        <th>Data de Início</th>
-                                        <th>Status</th>
-                                        <th>Acção</th>
+                                        <th scope="col"></th>
+                                        <th scope="col">ID</th>
+                                        <th scope="col">Produto</th>
+                                        <th scope="col">Quantidade</th>
+                                        <th scope="col">Data de Início</th>
+                                        <th scope="col">Status</th>
+                                        <th scope="col">Ação</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    @foreach ($data['ordens_producao'] as $ordem)
+                                    @forelse ($data['ordens_producao'] as $ordem)
                                         <tr>
                                             <td>
                                                 <div class="custom-control custom-checkbox">
-                                                    <input type="checkbox" class="custom-control-input">
-                                                    <label class="custom-control-label"></label>
+                                                    <input type="checkbox" class="custom-control-input" id="checkbox-{{ $ordem->id }}">
+                                                    <label class="custom-control-label" for="checkbox-{{ $ordem->id }}"></label>
                                                 </div>
                                             </td>
                                             <td>{{ $ordem->id }}</td>
                                             <td>{{ $ordem->product->nome ?? 'N/A' }}</td>
                                             <td>{{ $ordem->quantity }}</td>
-                                            <td>{{ date('d/m/y', strtotime($ordem->start_date)) }}</td>
+                                            <td>{{ date('d/m/Y', strtotime($ordem->start_date)) }}</td>
                                             <td>{{ $ordem->status }}</td>
                                             <td>
-                                                <button class="btn btn-sm dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                                    <span class="text-muted sr-only">Acção</span>
-                                                </button>
-                                                <div class="dropdown-menu dropdown-menu-right">
-                                                    <a class="dropdown-item" href="#" data-toggle="modal" data-target="#modalEdit-{{ $ordem->id }}">Editar</a>
-                                                    <a class="dropdown-item" href="{{ route('admin.gestao.ordem-producao.apagar', ['id' => $ordem->id]) }}">Remover</a>
+                                                <div class="dropdown">
+                                                    <button class="btn btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Ações para ordem {{ $ordem->id }}">
+                                                        Ação
+                                                    </button>
+                                                    <div class="dropdown-menu dropdown-menu-end">
+                                                        <a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#modalEdit-{{ $ordem->id }}">Editar</a>
+                                                        <a class="dropdown-item" href="{{ route('admin.gestao.ordem-producao.apagar', ['id' => $ordem->id]) }}" onclick="return confirm('Tem certeza que deseja remover esta ordem?')">Remover</a>
+                                                    </div>
                                                 </div>
                                             </td>
                                         </tr>
-                                        <div class="modal fade" id="modalEdit-{{ $ordem->id }}" tabindex="-1" role="dialog" aria-labelledby="modalEditLabel" aria-hidden="true">
+                                        <div class="modal fade" id="modalEdit-{{ $ordem->id }}" tabindex="-1" role="dialog" aria-labelledby="modalEditLabel-{{ $ordem->id }}" aria-hidden="true">
                                             <div class="modal-dialog" role="document">
-                                                morpheme modifiers
-                                                            <div class="modal-content">
+                                                <div class="modal-content">
                                                     <div class="modal-header">
-                                                        <h5 class="modal-title" id="modalEditLabel">Editar Ordem de Produção</h5>
-                                                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                                            <span aria-hidden="true">×</span>
-                                                        </button>
+                                                        <h5 class="modal-title" id="modalEditLabel-{{ $ordem->id }}">Editar Ordem de Produção</h5>
+                                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                                                     </div>
                                                     <div class="modal-body">
                                                         @include('admin.production_orders.edit.index', ['ordem' => $ordem])
@@ -80,56 +78,65 @@
                                                 </div>
                                             </div>
                                         </div>
-                                    @endforeach
-                                    @if ($data['ordens_producao']->isEmpty())
+                                    @empty
                                         <tr>
-                                            <td colspan="7" class="text-warning text-center"><b>Nenhum registo encontrado!</b></td>
+                                            <td colspan="7" class="text-center text-warning"><strong>Nenhum registro encontrado!</strong></td>
                                         </tr>
-                                    @endif
+                                    @endforelse
                                 </tbody>
-                            </div>
+                            </table>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
 
-    <div class="modal fade" id="modalCreate" tabindex="3" role="dialog" aria-labelledby="modal-tab" aria-hidden="Create">
-        <div class="modal-dialog" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="modalCreateLabel">Cadastrar Ordem de Produção</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times</span>
-                    </button>
-                </div>
-                <div class="modal-body">
-                    @include('admin.production_orders.create.index')
+        <div class="modal fade" id="modalCreate" tabindex="-1" role="dialog" aria-labelledby="modalCreateLabel" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="modalCreateLabel">Cadastrar Ordem de Produção</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        @include('admin.production_orders.create.index')
+                    </div>
                 </div>
             </div>
         </div>
+
+        <footer class="px-6 py-6 text-center">
+            <p class="mb-0 fs-4">© {{ config('app.company_name', 'MK LDA') }} {{ date('Y') }} <a class="pe-1 text-primary text-decoration-underline">❤️</a></p>
+        </footer>
     </div>
 
-    <div class="py-6 px-6 text-center">
-        <p class="mb-0 fs-4">© MK LDA 2024 <a class="pe-1 text-primary text-decoration-underline">❤️</a></p>
-    </div>
-</div>
+    @if (session('ordemProducaoCadastrada'))
+        <script>
+            Swal.fire('Ordem de Produção', '{{ session('ordemProducaoCadastrada') }} com sucesso!', 'success');
+        </script>
+    @endif
 
-@if (session('ordemProducaoCadastrada'))
-<script>
-    Swal.fire('Ordem de Produção', '{{ session("ordemProducaoCadastrada") }} com sucesso!', 'success')
-</script>
-@endif
+    @if (session('ordemProducaoAtualizada'))
+        <script>
+            Swal.fire('Ordem de Produção', '{{ session('ordemProducaoAtualizada') }} com sucesso!', 'success');
+        </script>
+    @endif
 
-@if (session('ordemProducaoAtualizada'))
-<script>
-    Swal.fire('Ordem de Produção', '{{ session("ordemProducaoAtualizada") }} com sucesso!', 'success')
-</script>
-@endif
+    @if (session('ordemProducaoRemovida'))
+        <script>
+            Swal.fire('Ordem de Produção', '{{ session('ordemProducaoRemovida') }} com sucesso!', 'success');
+        </script>
+    @endif
 
-@if (session('ordemProducaoRemovida'))
-<script>
-    Swal.fire('Ordem de Produção', '{{ session("ordemProducaoRemovida") }} com sucesso!', 'success')
-</script>
-@endif
+    <script>
+        $(document).ready(function() {
+            $('#dataTable-1').DataTable({
+                language: {
+                    url: '//cdn.datatables.net/plug-ins/1.13.4/i18n/pt-BR.json'
+                },
+                pageLength: 10,
+                responsive: true
+            });
+        });
+    </script>
 @endsection

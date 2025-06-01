@@ -15,8 +15,9 @@ return new class extends Migration
             $table->id();
             $table->string('nome');
             $table->string('numero');
-            $table->string('provincia'); 
+            $table->string('provincia');
             $table->string('imagem');
+            $table->softDeletes();
             $table->timestamps();
         });
     }

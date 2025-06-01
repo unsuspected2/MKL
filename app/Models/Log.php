@@ -10,6 +10,6 @@ class Log extends Model
     protected $fillable = ['user_id', 'ip', 'accao', 'descricao'];
     public function user()
     {
-        return $this->belongsTo(User::class, 'id_user');
+        return $this->belongsTo(User::class, 'user_id');
     }
 }
