@@ -6,8 +6,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class Sale extends Model
 {
-   protected $table = 'sale';
-    protected $fillable = ['quantidade', 'data_venda', 'id_cliente', 'id_product'];
+    protected $table = 'sale';
+    protected $fillable = ['id_cliente', 'id_product', 'quantidade', 'data_venda', 'total', 'budget_id'];
 
     public function client()
     {
@@ -27,5 +27,10 @@ class Sale extends Model
     public function taxes()
     {
         return $this->hasMany(Tax::class, 'sale_id');
+    }
+
+    public function budget()
+    {
+        return $this->belongsTo(Budget::class, 'budget_id');
     }
 }

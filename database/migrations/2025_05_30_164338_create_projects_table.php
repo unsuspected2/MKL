@@ -14,9 +14,10 @@ return new class extends Migration
             $table->text('description');
             $table->date('start_date');
             $table->date('end_date')->nullable();
-            $table->string('status'); // e.g., Planning, In Progress, Completed
+            $table->string('status');
             $table->decimal('budget', 12, 2);
             $table->foreignId('responsible_id')->constrained('employees')->onDelete('cascade');
+            $table->foreignId('budget_id')->nullable()->constrained('budgets')->onDelete('set null');
             $table->softDeletes();
             $table->timestamps();
         });

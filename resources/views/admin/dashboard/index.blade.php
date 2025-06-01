@@ -29,7 +29,7 @@
                         <div class="card-body d-flex align-items-center">
                             <i class="ti {{ $card['icon'] }} fs-7 text-{{ $card['color'] }} me-3"></i>
                             <div>
-                                <h6 class="card-title mb-0">{{ $card['title'] }}</h6>
+                                <h6 class="mb-0 card-title">{{ $card['title'] }}</h6>
                                 <p class="card-text fs-5">{{ $card['value'] }}</p>
                             </div>
                         </div>
@@ -38,23 +38,34 @@
             @endforeach
             <!-- Cards Adicionais -->
             <div class="col-md-4 col-lg-3">
-                <div class="card bg-light-info shadow-sm">
+                <div class="shadow-sm card bg-light-info">
                     <div class="card-body d-flex align-items-center">
                         <i class="ti ti-currency-dollar fs-7 text-info me-3"></i>
                         <div>
-                            <h6 class="card-title mb-0">Total de Vendas</h6>
+                            <h6 class="mb-0 card-title">Total de Vendas</h6>
                             <p class="card-text fs-5">{{ number_format($data['total_vendas'], 2, ',', '.') }} AOA</p>
                         </div>
                     </div>
                 </div>
             </div>
             <div class="col-md-4 col-lg-3">
-                <div class="card bg-light-primary shadow-sm">
+                <div class="shadow-sm card bg-light-primary">
                     <div class="card-body d-flex align-items-center">
                         <i class="ti ti-chart-bar fs-7 text-primary me-3"></i>
                         <div>
-                            <h6 class="card-title mb-0">Média IDH</h6>
+                            <h6 class="mb-0 card-title">Média IDH</h6>
                             <p class="card-text fs-5">{{ number_format($data['media_idh'], 2) }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 col-lg-3">
+                <div class="shadow-sm card bg-light-success">
+                    <div class="card-body d-flex align-items-center">
+                        <i class="ti ti-wallet fs-7 text-success me-3"></i>
+                        <div>
+                            <h6 class="mb-0 card-title">Saldo do Orçamento</h6>
+                            <p class="card-text fs-5">{{ number_format($data['saldo_orcamento'], 2, ',', '.') }} AOA</p>
                         </div>
                     </div>
                 </div>
@@ -62,29 +73,25 @@
         </div>
 
         <!-- Gráficos -->
-        <div class="row mt-5">
+        <div class="mt-5 row">
             <div class="col-lg-6">
-                <div class="card shadow-sm" style="height: 400px; overflow: hidden;">
+                <div class="shadow-sm card" style="height: 400px; overflow: hidden;">
                     <div class="card-body" style="height: 100%;">
                         <h5 class="card-title">Visão Geral de Entidades</h5>
                         <canvas id="barChart" style="max-height: 300px; height: 300px;"></canvas>
                     </div>
                 </div>
             </div>
-
-            <!-- Gráfico de Rosca -->
             <div class="col-lg-6">
-                <div class="card shadow-sm" style="height: 400px; overflow: hidden;">
+                <div class="shadow-sm card" style="height: 400px; overflow: hidden;">
                     <div class="card-body" style="height: 100%;">
                         <h5 class="card-title">Distribuição de Entidades</h5>
                         <canvas id="doughnutChart" style="max-height: 300px; height: 300px;"></canvas>
                     </div>
                 </div>
             </div>
-
-            <!-- Gráfico de Linha -->
-            <div class="col-lg-12 mt-4">
-                <div class="card shadow-sm" style="height: 400px; overflow: hidden;">
+            <div class="mt-4 col-lg-12">
+                <div class="shadow-sm card" style="height: 400px; overflow: hidden;">
                     <div class="card-body" style="height: 100%;">
                         <h5 class="card-title">Tendência de Vendas (Últimos 6 Meses)</h5>
                         <canvas id="lineChart" style="max-height: 300px; height: 300px;"></canvas>
@@ -94,9 +101,9 @@
         </div>
 
         <!-- Listas Recentes em Abas -->
-        <div class="card shadow-sm mt-5">
+        <div class="mt-5 shadow-sm card">
             <div class="card-header">
-                <h5 class="card-title mb-0">Atividades Recentes</h5>
+                <h5 class="mb-0 card-title">Atividades Recentes</h5>
             </div>
             <div class="card-body">
                 <ul class="nav nav-tabs" id="recentTabs" role="tablist">
@@ -141,133 +148,120 @@
                     </li>
                 </ul>
                 <div class="tab-content" id="recentTabsContent">
-                    <!-- Clientes -->
                     <div class="tab-pane fade show active" id="clientes" role="tabpanel">
-                        <ul class="list-group mt-3">
+                        <ul class="mt-3 list-group">
                             @forelse($ultimosClientes as $cliente)
                                 <li class="list-group-item">{{ $cliente->nome }}</li>
                             @empty
-                                <li class="list-group-item text-center">Nenhum cliente recente.</li>
+                                <li class="text-center list-group-item">Nenhum cliente recente.</li>
                             @endforelse
                         </ul>
                     </div>
-                    <!-- Produtos -->
                     <div class="tab-pane fade" id="produtos" role="tabpanel">
-                        <ul class="list-group mt-3">
+                        <ul class="mt-3 list-group">
                             @forelse($ultimosProdutos as $produto)
                                 <li class="list-group-item">{{ $produto->nome }}</li>
                             @empty
-                                <li class="list-group-item text-center">Nenhum produto recente.</li>
+                                <li class="text-center list-group-item">Nenhum produto recente.</li>
                             @endforelse
                         </ul>
                     </div>
-                    <!-- Fornecedores -->
                     <div class="tab-pane fade" id="fornecedores" role="tabpanel">
-                        <ul class="list-group mt-3">
+                        <ul class="mt-3 list-group">
                             @forelse($ultimosFornecedores as $fornecedor)
                                 <li class="list-group-item">{{ $fornecedor->nome }}</li>
                             @empty
-                                <li class="list-group-item text-center">Nenhum fornecedor recente.</li>
+                                <li class="text-center list-group-item">Nenhum fornecedor recente.</li>
                             @endforelse
                         </ul>
                     </div>
-                    <!-- Vendas -->
                     <div class="tab-pane fade" id="vendas" role="tabpanel">
-                        <ul class="list-group mt-3">
+                        <ul class="mt-3 list-group">
                             @forelse($ultimasVendas as $venda)
                                 <li class="list-group-item">{{ $venda->client->nome }} comprou {{ $venda->product->nome }} ({{ number_format($venda->quantidade * $venda->product->preco, 2, ',', '.') }} AOA)</li>
                             @empty
-                                <li class="list-group-item text-center">Nenhuma venda recente.</li>
+                                <li class="text-center list-group-item">Nenhuma venda recente.</li>
                             @endforelse
                         </ul>
                     </div>
-                    <!-- Funcionários -->
                     <div class="tab-pane fade" id="funcionarios" role="tabpanel">
-                        <ul class="list-group mt-3">
+                        <ul class="mt-3 list-group">
                             @forelse($ultimosFuncionarios as $funcionario)
                                 <li class="list-group-item">{{ $funcionario->name }} ({{ $funcionario->position }})</li>
                             @empty
-                                <li class="list-group-item text-center">Nenhum funcionário recente.</li>
+                                <li class="text-center list-group-item">Nenhum funcionário recente.</li>
                             @endforelse
                         </ul>
                     </div>
-                    <!-- Projetos -->
                     <div class="tab-pane fade" id="projetos" role="tabpanel">
-                        <ul class="list-group mt-3">
+                        <ul class="mt-3 list-group">
                             @forelse($ultimosProjetos as $projeto)
                                 <li class="list-group-item">{{ $projeto->name }} ({{ $projeto->status }})</li>
                             @empty
-                                <li class="list-group-item text-center">Nenhum projeto recente.</li>
+                                <li class="text-center list-group-item">Nenhum projeto recente.</li>
                             @endforelse
                         </ul>
                     </div>
-                    <!-- Financeiros -->
                     <div class="tab-pane fade" id="financeiros" role="tabpanel">
-                        <ul class="list-group mt-3">
+                        <ul class="mt-3 list-group">
                             @forelse($ultimosFinanceiros as $financeiro)
-                                <li class="list-group-item">{{ $financeiro->type }}: {{ $financeiro->description ?? 'Sem descrição' }} ({{ number_format($financeiro->amount, 2, ',', '.') }} AOA)</li>
+                                <li class="list-group-item">{{ $financeiro->transaction_type }}: {{ $financeiro->description ?? 'Sem descrição' }} ({{ number_format($financeiro->amount, 2, ',', '.') }} AOA)</li>
                             @empty
-                                <li class="list-group-item text-center">Nenhum registro financeiro recente.</li>
+                                <li class="text-center list-group-item">Nenhum registro financeiro recente.</li>
                             @endforelse
                         </ul>
                     </div>
-                    <!-- Contratos -->
                     <div class="tab-pane fade" id="contratos" role="tabpanel">
-                        <ul class="list-group mt-3">
+                        <ul class="mt-3 list-group">
                             @forelse($ultimosContratos as $contrato)
                                 <li class="list-group-item">{{ $contrato->title }} ({{ $contrato->status }})</li>
                             @empty
-                                <li class="list-group-item text-center">Nenhum contrato recente.</li>
+                                <li class="text-center list-group-item">Nenhum contrato recente.</li>
                             @endforelse
                         </ul>
                     </div>
-                    <!-- Ordens de Produção -->
                     <div class="tab-pane fade" id="ordens-producao" role="tabpanel">
-                        <ul class="list-group mt-3">
+                        <ul class="mt-3 list-group">
                             @forelse($ultimasOrdensProducao as $ordem)
                                 <li class="list-group-item">{{ $ordem->product->nome }} (Qtd: {{ $ordem->quantity }}, {{ $ordem->status }})</li>
                             @empty
-                                <li class="list-group-item text-center">Nenhuma ordem de produção recente.</li>
+                                <li class="text-center list-group-item">Nenhuma ordem de produção recente.</li>
                             @endforelse
                         </ul>
                     </div>
-                    <!-- Impostos -->
                     <div class="tab-pane fade" id="impostos" role="tabpanel">
-                        <ul class="list-group mt-3">
+                        <ul class="mt-3 list-group">
                             @forelse($ultimosImpostos as $imposto)
                                 <li class="list-group-item">{{ $imposto->tax_type }} ({{ number_format($imposto->amount, 2, ',', '.') }} AOA)</li>
                             @empty
-                                <li class="list-group-item text-center">Nenhum imposto recente.</li>
+                                <li class="text-center list-group-item">Nenhum imposto recente.</li>
                             @endforelse
                         </ul>
                     </div>
-                    <!-- Benefícios -->
                     <div class="tab-pane fade" id="beneficios" role="tabpanel">
-                        <ul class="list-group mt-3">
+                        <ul class="mt-3 list-group">
                             @forelse($ultimosBeneficios as $beneficio)
                                 <li class="list-group-item">{{ $beneficio->benefit_type }} ({{ $beneficio->amount ? number_format($beneficio->amount, 2, ',', '.') . ' AOA' : 'Sem valor' }})</li>
                             @empty
-                                <li class="list-group-item text-center">Nenhum benefício recente.</li>
+                                <li class="text-center list-group-item">Nenhum benefício recente.</li>
                             @endforelse
                         </ul>
                     </div>
-                    <!-- Métricas IDH -->
                     <div class="tab-pane fade" id="metricas-idh" role="tabpanel">
-                        <ul class="list-group mt-3">
+                        <ul class="mt-3 list-group">
                             @forelse($ultimasMetricasIdh as $metrica)
                                 <li class="list-group-item">{{ $metrica->metric_name }} ({{ number_format($metrica->value, 2) }}, {{ $metrica->region ?? 'Sem região' }})</li>
                             @empty
-                                <li class="list-group-item text-center">Nenhuma métrica IDH recente.</li>
+                                <li class="text-center list-group-item">Nenhuma métrica IDH recente.</li>
                             @endforelse
                         </ul>
                     </div>
-                    <!-- Atividades -->
                     <div class="tab-pane fade" id="atividades" role="tabpanel">
-                        <ul class="list-group mt-3">
+                        <ul class="mt-3 list-group">
                             @forelse($ultimasAtividades as $atividade)
                                 <li class="list-group-item">{{ $atividade->user->name }}: {{ $atividade->accao }} ({{ $atividade->created_at->diffForHumans() }})</li>
                             @empty
-                                <li class="list-group-item text-center">Nenhuma atividade recente.</li>
+                                <li class="text-center list-group-item">Nenhuma atividade recente.</li>
                             @endforelse
                         </ul>
                     </div>
@@ -275,7 +269,7 @@
             </div>
         </div>
 
-        <div class="py-6 px-6 text-center">
+        <div class="px-6 py-6 text-center">
             <p class="mb-0 fs-4">© MK LDA 2025 <a href="#" class="pe-1 text-primary text-decoration-underline">❤️</a></p>
         </div>
     </div>

@@ -16,6 +16,7 @@ use App\Models\Tax;
 use App\Models\Benefit;
 use App\Models\IdhMetric;
 use App\Models\Log;
+use App\Models\Budget;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 
@@ -23,7 +24,6 @@ class MainController extends Controller
 {
     public function index()
     {
-        // Contagens totais
         $data = [
             'clientes' => Client::count(),
             'produtos' => Product::count(),
@@ -41,9 +41,9 @@ class MainController extends Controller
             'total_vendas' => Sale::join('product', 'sale.id_product', 'product.id')
                 ->sum(DB::raw('sale.quantidade * product.preco')) ?? 0,
             'media_idh' => IdhMetric::avg('value') ?? 0,
+            'saldo_orcamento' => Budget::sum('amount') ?? 0, // Saldo atual do orçamento
         ];
 
-        // Dados recentes (últimos 5 registros)
         $ultimosClientes = Client::latest()->take(5)->get();
         $ultimosProdutos = Product::latest()->take(5)->get();
         $ultimosFornecedores = Supplier::latest()->take(5)->get();
@@ -58,7 +58,6 @@ class MainController extends Controller
         $ultimasMetricasIdh = IdhMetric::latest()->take(5)->get();
         $ultimasAtividades = Log::with('user')->latest()->take(5)->get();
 
-        // Dados para gráfico de linha (vendas por mês nos últimos 6 meses)
         $vendasPorMes = Sale::join('product', 'sale.id_product', 'product.id')
             ->select(
                 DB::raw('DATE_FORMAT(sale.created_at, "%Y-%m") as mes'),
@@ -92,60 +91,5 @@ class MainController extends Controller
             'meses',
             'valoresVendas'
         ));
-    }
-
-    public function list_clients()
-    {
-        $data['clientes'] = Client::orderBy('id', 'desc')->get();
-        return view('admin.clients.table', ['data' => $data]);
-    }
-
-    public function list_products()
-    {
-        $data['produtos'] = Product::join('supplier', 'product.id_fornecedor', 'supplier.id')
-            ->select('product.*', 'supplier.nome as nome_fornecedor')
-            ->orderBy('product.id', 'desc')
-            ->get();
-        return view('admin.products.table', ['data' => $data]);
-    }
-
-    public function list_suppliers()
-    {
-        $data['fornecedores'] = Supplier::orderBy('id', 'desc')->get();
-        return view('admin.suppliers.table', ['data' => $data]);
-    }
-
-    public function list_sales()
-    {
-        // Obter todas as vendas com joins para cliente e produto
-        $data['vendas'] = Sale::join('client', 'sale.id_cliente', 'client.id')
-            ->join('product', 'sale.id_product', 'product.id')
-            ->select(
-                'sale.*',
-                'client.nome as nome_cliente',
-                'product.nome as nome_produto',
-                'product.preco as preco_produto'
-            )
-            ->orderBy('sale.id', 'desc')
-            ->get();
-
-        // Obter clientes e produtos para os dropdowns do formulário
-        $data['clientes'] = Client::orderBy('nome')->get();
-        $data['produtos'] = Product::with('supplier') // Carrega o fornecedor relacionado se necessário
-            ->orderBy('nome')
-            ->get();
-
-        return view('admin.sales.table', ['data' => $data]);
-    }
-
-
-    public function list_logs()
-    {
-        $data['user'] = auth()->user();
-        $data['logs'] = Log::join('users', 'log.user_id', 'users.id')
-            ->select('log.*', 'users.id as user_id', 'users.name as nome_user')
-            ->orderBy('log.id', 'desc')
-            ->get();
-        return view('admin.logs.table', ['data' => $data]);
     }
 }

@@ -10,11 +10,12 @@ return new class extends Migration
     {
         Schema::create('taxes', function (Blueprint $table) {
             $table->id();
-            $table->string('tax_type'); // e.g., VAT, Income Tax
+            $table->string('tax_type');
             $table->decimal('amount', 12, 2);
             $table->date('due_date');
-            $table->string('status'); // e.g., Pending, Paid
+            $table->string('status');
             $table->foreignId('sale_id')->nullable()->constrained('sale')->onDelete('set null');
+            $table->foreignId('budget_id')->nullable()->constrained('budgets')->onDelete('set null');
             $table->text('notes')->nullable();
             $table->softDeletes();
             $table->timestamps();

@@ -4,9 +4,11 @@ namespace App\Http\Controllers\Admin\Employee;
 
 use App\Http\Controllers\Controller;
 use App\Models\Employee;
+use App\Models\Budget;
 use Illuminate\Http\Request;
 use App\Models\Log;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\DB;
 
 class MainController extends Controller
 {
@@ -15,6 +17,7 @@ class MainController extends Controller
         $funcionarios = Employee::all();
         return view('admin.employees.list.index', ['data' => ['funcionarios' => $funcionarios]]);
     }
+
 
     public function store(Request $request)
     {
@@ -26,30 +29,40 @@ class MainController extends Controller
             'hire_date' => 'required|date',
             'salary' => 'required|numeric|min:0',
             'position' => 'required|string|max:255',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:204800', // Validação para imagem
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:204800',
         ]);
 
-        // Lidar com o upload da imagem
-        if ($request->hasFile('image')) {
-            $validated['image'] = $request->file('image')->store('employees', 'public');
-        }
+        DB::transaction(function () use ($validated, $request) {
+            if ($request->hasFile('image')) {
+                $validated['image'] = $request->file('image')->store('employees', 'public');
+            }
 
-        $funcionario = Employee::create($validated);
+            $employee = Employee::create($validated);
 
-        Log::create([
-            'user_id' => auth()->id(),
-            'ip' => $request->ip(),
-            'accao' => 'Criação de Funcionário',
-            'id_user' => auth()->id(), // Adicionado para compatibilidade com a tabela log
-            'descricao' => "Funcionário {$funcionario->name} criado.",
-        ]);
+            $currentBalance = Budget::sum('amount') ?? 0;
+            Budget::create([
+                'balance' => $currentBalance - $validated['salary'],
+                'description' => "Salário do funcionário {$employee->name}",
+                'transaction_type' => 'Despesa',
+                'amount' => -$validated['salary'],
+                'transaction_date' => $validated['hire_date'],
+                'user_id' => auth()->id(),
+            ]);
 
-        return redirect()->route('admin.gestao.funcionarios')->with('funcionarioCadastrado', 'Funcionário cadastrado');
+            Log::create([
+                'user_id' => auth()->id(),
+                'ip' => $request->ip(),
+                'accao' => 'Criação de Funcionário',
+                'descricao' => "Funcionário {$employee->name} criado.",
+            ]);
+        });
+
+        return redirect()->route('admin.gestao.funcionarios')->with('funcionarioCadastrado', 'Funcionário cadastrado com sucesso.');
     }
 
     public function update(Request $request, $id)
     {
-        $funcionario = Employee::findOrFail($id);
+        $employee = Employee::findOrFail($id);
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:employees,email,' . $id,
@@ -58,54 +71,60 @@ class MainController extends Controller
             'hire_date' => 'required|date',
             'salary' => 'required|numeric|min:0',
             'position' => 'required|string|max:255',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:204800', // Validação para imagem
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:204800',
         ]);
 
-        // Lidar com o upload da imagem
-        if ($request->hasFile('image')) {
-            // Excluir a imagem antiga, se existir
-            if ($funcionario->image) {
-                Storage::disk('public')->delete($funcionario->image);
+        DB::transaction(function () use ($validated, $request, $employee) {
+            if ($request->hasFile('image')) {
+                if ($employee->image) {
+                    Storage::disk('public')->delete($employee->image);
+                }
+                $validated['image'] = $request->file('image')->store('employees', 'public');
+            } else {
+                $validated['image'] = $employee->image;
             }
-            $validated['image'] = $request->file('image')->store('employees', 'public');
-        } else {
-            // Manter a imagem existente
-            $validated['image'] = $funcionario->image;
-        }
 
-        $funcionario->update($validated);
+            $employee->update($validated);
 
-        Log::create([
-            'user_id' => auth()->id(),
-            'ip' => $request->ip(),
-            'accao' => 'Atualização de Funcionário',
-            'id_user' => auth()->id(), // Adicionado para compatibilidade com a tabela log
-            'descricao' => "Funcionário {$funcionario->name} atualizado.",
-        ]);
+            $currentBalance = Budget::sum('amount') ?? 0;
+            Budget::create([
+                'balance' => $currentBalance - $validated['salary'],
+                'description' => "Atualização do salário do funcionário {$employee->name}",
+                'transaction_type' => 'Despesa',
+                'amount' => -$validated['salary'],
+                'transaction_date' => $validated['hire_date'],
+                'user_id' => auth()->id(),
+            ]);
 
-        return redirect()->route('admin.gestao.funcionarios')->with('funcionarioAtualizado', 'Funcionário atualizado');
+            Log::create([
+                'user_id' => auth()->id(),
+                'ip' => $request->ip(),
+                'accao' => 'Atualização de Funcionário',
+                'descricao' => "Funcionário {$employee->name} atualizado.",
+            ]);
+        });
+
+        return redirect()->route('admin.gestao.funcionarios')->with('funcionarioAtualizado', 'Funcionário atualizado com sucesso.');
     }
 
     public function destroy($id)
     {
-        $funcionario = Employee::findOrFail($id);
-        $nomeFuncionario = $funcionario->name;
+        DB::transaction(function () use ($id) {
+            $employee = Employee::findOrFail($id);
+            if ($employee->image) {
+                Storage::disk('public')->delete($employee->image);
+            }
 
-        // Excluir a imagem, se existir
-        if ($funcionario->image) {
-            Storage::disk('public')->delete($funcionario->image);
-        }
+            Log::create([
+                'user_id' => auth()->id(),
+                'ip' => request()->ip(),
+                'accao' => 'Exclusão de Funcionário',
+                'descricao' => "Funcionário {$employee->name} removido.",
+            ]);
 
-        $funcionario->delete();
+            $employee->delete();
+        });
 
-        Log::create([
-            'user_id' => auth()->id(),
-            'ip' => request()->ip(),
-            'accao' => 'Exclusão de Funcionário',
-            'id_user' => auth()->id(), // Adicionado para compatibilidade com a tabela log
-            'descricao' => "Funcionário {$nomeFuncionario} removido.",
-        ]);
-
-        return redirect()->route('admin.gestao.funcionarios')->with('funcionarioRemovido', 'Funcionário removido');
+        return redirect()->route('admin.gestao.funcionarios')->with('funcionarioRemovido', 'Funcionário removido com sucesso.');
     }
 }

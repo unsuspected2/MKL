@@ -4,13 +4,15 @@ namespace App\Http\Controllers\Admin\Project;
 
 use App\Http\Controllers\Controller;
 use App\Models\Project;
-use App\Models\Client;
 use App\Models\Employee;
+use App\Models\Budget;
 use Illuminate\Http\Request;
-use App\Models\Log;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\DB;
 
 class MainController extends Controller
 {
+
     public function index()
     {
         $projetos = Project::with('responsible')->get();
@@ -26,59 +28,101 @@ class MainController extends Controller
             'start_date' => 'required|date',
             'end_date' => 'nullable|date|after_or_equal:start_date',
             'status' => 'required|string|in:Planejado,Em Andamento,Concluído,Cancelado',
-            'budget' => 'required|numeric|min:0', // Corrigido para valor numérico
-            'responsible_id' => 'required|exists:employees,id', // Corrigido para employees (não clients)
+            'budget' => 'required|numeric|min:0',
+            'responsible_id' => 'required|exists:employees,id',
         ]);
 
-        $projeto = Project::create($validated);
+        DB::transaction(function () use ($validated, $request) {
+            $project = Project::create($validated);
 
-        Log::create([
-            'user_id' => auth()->id(),
-            'ip' => $request->ip(),
-            'accao' => 'Criação de Projeto',
-            'descricao' => "Projeto {$projeto->name} criado.", // Corrigido para name (não title)
-        ]);
+            $currentBalance = Budget::sum('amount') ?? 0;
+            Budget::create([
+                'balance' => $currentBalance - $validated['budget'],
+                'description' => "Orçamento do projeto {$project->name}",
+                'transaction_type' => 'Despesa',
+                'amount' => -$validated['budget'],
+                'transaction_date' => $validated['start_date'],
+                'user_id' => auth()->id(),
+            ]);
 
-        return redirect()->route('admin.gestao.projetos')->with('projetoCadastrado', 'Projeto cadastrado');
+            $project->update(['budget_id' => Budget::latest()->first()->id]);
+
+            Log::create([
+                'user_id' => auth()->id(),
+                'ip' => $request->ip(),
+                'accao' => 'Criação de Projeto',
+                'descricao' => "Projeto {$project->name} criado.",
+            ]);
+        });
+
+        return redirect()->route('admin.gestao.projetos')->with('projetoCadastrado', 'Projeto cadastrado com sucesso.');
     }
 
-   public function update(Request $request, $id)
+    public function update(Request $request, $id)
     {
-        $projeto = Project::findOrFail($id);
+        $project = Project::findOrFail($id);
         $validated = $request->validate([
-            'name' => 'required|string|max:255', // Corrigido para name (não title)
+            'name' => 'required|string|max:255',
             'description' => 'required|string',
             'start_date' => 'required|date',
             'end_date' => 'nullable|date|after_or_equal:start_date',
             'status' => 'required|string|in:Planejado,Em Andamento,Concluído,Cancelado',
-            'budget' => 'required|numeric|min:0', // Adicionado
-            'responsible_id' => 'required|exists:employees,id', // Corrigido para employees
+            'budget' => 'required|numeric|min:0',
+            'responsible_id' => 'required|exists:employees,id',
         ]);
 
-        $projeto->update($validated);
+        DB::transaction(function () use ($validated, $request, $project) {
+            if ($project->budget_id) {
+                $oldBudget = Budget::findOrFail($project->budget_id);
+                $currentBalance = Budget::sum('amount') - $oldBudget->amount;
+                $oldBudget->delete();
+            } else {
+                $currentBalance = Budget::sum('amount') ?? 0;
+            }
 
-        Log::create([
-            'user_id' => auth()->id(),
-            'ip' => $request->ip(),
-            'accao' => 'Atualização de Projeto',
-            'descricao' => "Projeto {$projeto->name} atualizado.", // Corrigido para name
-        ]);
+            $project->update($validated);
 
-        return redirect()->route('admin.gestao.projetos')->with('projetoAtualizado', 'Projeto atualizado');
+            Budget::create([
+                'balance' => $currentBalance - $validated['budget'],
+                'description' => "Atualização do orçamento do projeto {$project->name}",
+                'transaction_type' => 'Despesa',
+                'amount' => -$validated['budget'],
+                'transaction_date' => $validated['start_date'],
+                'user_id' => auth()->id(),
+            ]);
+
+            $project->update(['budget_id' => Budget::latest()->first()->id]);
+
+            Log::create([
+                'user_id' => auth()->id(),
+                'ip' => $request->ip(),
+                'accao' => 'Atualização de Projeto',
+                'descricao' => "Projeto {$project->name} atualizado.",
+            ]);
+        });
+
+        return redirect()->route('admin.gestao.projetos')->with('projetoAtualizado', 'Projeto atualizado com sucesso.');
     }
 
     public function destroy($id)
     {
-        $projeto = Project::findOrFail($id);
-        $projeto->delete();
+        DB::transaction(function () use ($id) {
+            $project = Project::findOrFail($id);
+            if ($project->budget_id) {
+                $budget = Budget::findOrFail($project->budget_id);
+                $budget->delete();
+            }
 
-        Log::create([
-            'user_id' => auth()->id(),
-            'ip' => request()->ip(),
-            'accao' => 'Exclusão de Projeto',
-            'descricao' => "Projeto {$projeto->title} removido.",
-        ]);
+            Log::create([
+                'user_id' => auth()->id(),
+                'ip' => request()->ip(),
+                'accao' => 'Exclusão de Projeto',
+                'descricao' => "Projeto {$project->name} removido.",
+            ]);
 
-        return redirect()->route('admin.gestao.projetos')->with('projetoRemovido', 'Projeto removido');
+            $project->delete();
+        });
+
+        return redirect()->route('admin.gestao.projetos')->with('projetoRemovido', 'Projeto removido com sucesso.');
     }
 }

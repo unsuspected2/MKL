@@ -13,7 +13,6 @@ return new class extends Migration
     {
         Schema::create('log', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('user_id')->nullable();
             $table->ipAddress('ip')->nullable();
             $table->string('accao');
             $table->text('descricao');

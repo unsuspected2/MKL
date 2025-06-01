@@ -10,12 +10,13 @@ return new class extends Migration
     {
         Schema::create('financials', function (Blueprint $table) {
             $table->id();
-            $table->string('type'); // e.g., Payable, Receivable
+            $table->string('transaction_type'); // Renomeado de 'type'
             $table->decimal('amount', 12, 2);
             $table->date('due_date');
-            $table->string('status'); // e.g., Pending, Paid, Overdue
+            $table->string('status');
             $table->text('description')->nullable();
             $table->foreignId('sale_id')->nullable()->constrained('sale')->onDelete('set null');
+            $table->foreignId('budget_id')->nullable()->constrained('budgets')->onDelete('set null');
             $table->softDeletes();
             $table->timestamps();
         });

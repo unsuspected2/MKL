@@ -14,8 +14,9 @@ return new class extends Migration
             $table->integer('quantity');
             $table->date('start_date');
             $table->date('end_date')->nullable();
-            $table->string('status'); // e.g., Scheduled, In Progress, Completed
-            $table->text('raw_materials')->nullable(); // JSON or text for raw materials used
+            $table->string('status');
+            $table->text('raw_materials')->nullable();
+            $table->foreignId('budget_id')->nullable()->constrained('budgets')->onDelete('set null');
             $table->softDeletes();
             $table->timestamps();
         });

@@ -17,10 +17,12 @@ class MainController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+        public function index()
     {
-        //
+        $data['clientes'] = Client::orderBy('id', 'desc')->get();
+        return view('admin.clients.table', ['data' => $data]);
     }
+
 
     /**
      * Show the form for creating a new resource.

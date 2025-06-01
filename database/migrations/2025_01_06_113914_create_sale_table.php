@@ -14,9 +14,11 @@ return new class extends Migration
         Schema::create('sale', function (Blueprint $table) {
             $table->id();
             $table->integer('quantidade');
+            $table->decimal('total', 12, 2)->default(0); // Valor total da venda
             $table->date('data_venda');
-            $table->foreignId('id_cliente')->constrained()->onDelete('cascade')->references('id')->on('client');
-            $table->foreignId('id_product')->constrained()->onDelete('cascade')->references('id')->on('product');
+            $table->foreignId('id_cliente')->constrained('client')->onDelete('cascade');
+            $table->foreignId('id_product')->constrained('product')->onDelete('cascade');
+            $table->foreignId('budget_id')->nullable()->constrained('budgets')->onDelete('set null'); // Vincula ao orçamento
             $table->softDeletes();
             $table->timestamps();
         });

@@ -20,7 +20,7 @@ class MainController extends Controller
             ->select('product.*', 'supplier.nome as nome_fornecedor')
             ->orderBy('product.id', 'desc')
             ->get();
-        return view('admin.products.table', ['data' => $data]);
+        return view('admin.products.list.index', ['data' => $data]);
     }
 
     protected function validateProduct(Request $request)

@@ -11,10 +11,11 @@ return new class extends Migration
         Schema::create('benefits', function (Blueprint $table) {
             $table->id();
             $table->foreignId('employee_id')->constrained('employees')->onDelete('cascade');
-            $table->string('benefit_type'); // e.g., Health Insurance, Bonus
+            $table->string('benefit_type');
             $table->decimal('amount', 10, 2)->nullable();
             $table->date('start_date');
             $table->date('end_date')->nullable();
+            $table->foreignId('budget_id')->nullable()->constrained('budgets')->onDelete('set null');
             $table->text('description')->nullable();
             $table->softDeletes();
             $table->timestamps();
