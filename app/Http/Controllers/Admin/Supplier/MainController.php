@@ -13,9 +13,10 @@ class MainController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+      public function index()
     {
-        //
+        $data['fornecedores'] = Supplier::orderBy('id', 'desc')->get();
+        return view('admin.suppliers.table', ['data' => $data]);
     }
 
     /**
@@ -32,8 +33,8 @@ class MainController extends Controller
     public function store(Request $request)
 
     {
-        
-        
+
+
          /* CRIAÇÃO DE UM NOVO RESITRO NA TABELA Fornecedor */
 
          $fornecedor = Supplier::create([
@@ -45,8 +46,8 @@ class MainController extends Controller
             'imagem' => 'valor_teste',    // Atribua o valor do campo 'phone' do request
         ]);
 
-        $user_id= auth()->id();  
-  
+        $user_id= auth()->id();
+
 
         /* CRIAÇÃO DO LOG */
         Log::create([
@@ -81,7 +82,7 @@ class MainController extends Controller
      */
     public function update(Request $request, $id)
     {
-        
+
          // Localizar o fornecedor
     $fornecedor = Supplier::findOrFail($id);
 
@@ -136,6 +137,6 @@ class MainController extends Controller
 
 
    return redirect()->back()->with('fornecedorRemovido', 'Eliminado');
-       
+
     }
 }

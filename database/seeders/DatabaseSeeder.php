@@ -12,7 +12,7 @@ class DatabaseSeeder extends Seeder
         $this->call([
             RoleSeeder::class,           // Cria papéis primeiro
             UserSeeder::class,           // Cria usuários e atribui papéis
-            ClientSeeder::class,         // Cria clientes
+/*             ClientSeeder::class,         // Cria clientes
             SupplierSeeder::class,       // Cria fornecedores
             ProductSeeder::class,        // Cria produtos (depende de fornecedores)
             SaleSeeder::class,           // Cria vendas (depende de clientes e produtos)
@@ -24,8 +24,8 @@ class DatabaseSeeder extends Seeder
             ProductionOrderSeeder::class, // Cria ordens de produção (depende de produtos)
             TaxSeeder::class,            // Cria impostos (depende de vendas)
             BenefitSeeder::class,        // Cria benefícios (depende de funcionários)
-            IdhMetricSeeder::class,      // Cria métricas IDH
-            LogSeeder::class,            // Cria logs (depende de usuários)
-        ]);
+ */            IdhMetricSeeder::class,      // Cria métricas IDH
+/*             LogSeeder::class,            // Cria logs (depende de usuários)
+ */        ]);
     }
 }

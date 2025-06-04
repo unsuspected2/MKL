@@ -1,11 +1,12 @@
 <?php
 
-namespace App\Http\Controllers\Admin\saques;
+namespace App\Http\Controllers\Admin\Saques;
 
 use App\Http\Controllers\Controller;
 use App\Models\Budget;
 use App\Models\Financial;
 use App\Models\Log;
+use App\Services\BudgetService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -18,7 +19,8 @@ class MainController extends Controller
         return view('admin.withdrawals_loans.list.index', [
             'data' => [
                 'transactions' => $transactions,
-                'deletedTransactions' => $deletedTransactions
+                'deletedTransactions' => $deletedTransactions,
+                'currentBalance' => Budget::sum('amount') ?? 0,
             ]
         ]);
     }
@@ -32,19 +34,13 @@ class MainController extends Controller
         ]);
 
         DB::transaction(function () use ($validated, $request) {
-            $currentBalance = Budget::sum('amount') ?? 0;
-            if ($validated['amount'] > $currentBalance) {
-                throw new \Exception('Saldo insuficiente para o saque.');
-            }
-
-            Budget::create([
-                'balance' => $currentBalance - $validated['amount'],
-                'description' => $validated['description'],
-                'transaction_type' => 'Saque',
-                'amount' => -$validated['amount'],
-                'transaction_date' => $validated['transaction_date'],
-                'user_id' => auth()->id(),
-            ]);
+            $budgetId = BudgetService::updateBudget(
+                $validated['amount'],
+                $validated['description'],
+                'Saque',
+                $validated['transaction_date'],
+                auth()->id()
+            );
 
             Log::create([
                 'user_id' => auth()->id(),
@@ -68,16 +64,15 @@ class MainController extends Controller
         ]);
 
         DB::transaction(function () use ($validated, $request) {
-            $currentBalance = Budget::sum('amount') ?? 0;
+            $budgetId = BudgetService::updateBudget(
+                $validated['amount'],
+                $validated['description'] . (isset($validated['interest_rate']) ? " Taxa de juros: {$validated['interest_rate']}%" : ''),
+                'Empréstimo',
+                $validated['transaction_date'],
+                auth()->id()
+            );
 
-            $budget = Budget::create([
-                'balance' => $currentBalance + $validated['amount'],
-                'description' => $validated['description'] . (isset($validated['interest_rate']) ? " Taxa de juros: {$validated['interest_rate']}%" : ''),
-                'transaction_type' => 'Empréstimo',
-                'amount' => $validated['amount'],
-                'transaction_date' => $validated['transaction_date'],
-                'user_id' => auth()->id(),
-            ]);
+            $budget = Budget::findOrFail($budgetId);
 
             Financial::create([
                 'transaction_type' => 'Despesa',
@@ -101,8 +96,9 @@ class MainController extends Controller
 
     public function edit($id)
     {
-        $transaction = Budget::findOrFail($id);
-        return view('admin.withdrawals_loans.edit.index', ['transaction' => $transaction]);
+        // Não precisamos de uma view separada; retornamos os dados para o modal
+        $transaction = Budget::with('financial')->findOrFail($id);
+        return response()->json($transaction);
     }
 
     public function update(Request $request, $id)
@@ -118,19 +114,17 @@ class MainController extends Controller
         ]);
 
         DB::transaction(function () use ($validated, $request, $transaction) {
-            $currentBalance = Budget::sum('amount') - $transaction->amount;
-            $newAmount = $transaction->transaction_type === 'Saque' ? -$validated['amount'] : $validated['amount'];
+            BudgetService::revertBudget($transaction->id);
 
-            if ($transaction->transaction_type === 'Saque' && $validated['amount'] > $currentBalance) {
-                throw new \Exception('Saldo insuficiente para o saque.');
-            }
+            $budgetId = BudgetService::updateBudget(
+                $validated['amount'],
+                $validated['description'] . (isset($validated['interest_rate']) && $transaction->transaction_type === 'Empréstimo' ? " Taxa de juros: {$validated['interest_rate']}%" : ''),
+                $transaction->transaction_type,
+                $validated['transaction_date'],
+                auth()->id()
+            );
 
-            $transaction->update([
-                'balance' => $currentBalance + $newAmount,
-                'description' => $validated['description'] . (isset($validated['interest_rate']) && $transaction->transaction_type === 'Empréstimo' ? " Taxa de juros: {$validated['interest_rate']}%" : ''),
-                'amount' => $newAmount,
-                'transaction_date' => $validated['transaction_date'],
-            ]);
+            $transaction->update(['budget_id' => $budgetId]);
 
             if ($transaction->transaction_type === 'Empréstimo') {
                 $financial = Financial::where('budget_id', $transaction->id)->first();
@@ -159,6 +153,7 @@ class MainController extends Controller
         $transaction = Budget::findOrFail($id);
 
         DB::transaction(function () use ($transaction, $id) {
+            BudgetService::revertBudget($transaction->id);
             $transaction->delete();
 
             Log::create([
@@ -177,7 +172,16 @@ class MainController extends Controller
         $transaction = Budget::onlyTrashed()->findOrFail($id);
 
         DB::transaction(function () use ($transaction, $id) {
+            $budgetId = BudgetService::updateBudget(
+                abs($transaction->amount),
+                $transaction->description,
+                $transaction->transaction_type,
+                $transaction->transaction_date,
+                $transaction->user_id
+            );
+
             $transaction->restore();
+            $transaction->update(['budget_id' => $budgetId]);
 
             Log::create([
                 'user_id' => auth()->id(),

@@ -40,8 +40,10 @@ class MainController extends Controller
             'atividades' => Log::count(),
             'total_vendas' => Sale::join('product', 'sale.id_product', 'product.id')
                 ->sum(DB::raw('sale.quantidade * product.preco')) ?? 0,
+            'total_despesas' => Budget::where('transaction_type', 'Despesa')->sum('amount') ?? 0,
+            'total_receitas' => Budget::where('transaction_type', 'Receita')->sum('amount') ?? 0,
+            'saldo_orcamento' => Budget::sum('amount') ?? 0,
             'media_idh' => IdhMetric::avg('value') ?? 0,
-            'saldo_orcamento' => Budget::sum('amount') ?? 0, // Saldo atual do orçamento
         ];
 
         $ultimosClientes = Client::latest()->take(5)->get();
@@ -91,5 +93,14 @@ class MainController extends Controller
             'meses',
             'valoresVendas'
         ));
+    }
+        public function list_logs()
+    {
+        $data['user'] = auth()->user();
+        $data['logs'] = Log::join('users', 'log.user_id', 'users.id')
+            ->select('log.*', 'users.id as user_id', 'users.name as nome_user')
+            ->orderBy('log.id', 'desc')
+            ->get();
+        return view('admin.logs.table', ['data' => $data]);
     }
 }

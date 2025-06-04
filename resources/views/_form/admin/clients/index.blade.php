@@ -4,8 +4,7 @@
         <div class="form-group">
             <label for="name" class="col-form-label" style="color:black">Nome Completo:</label>
             <input type="text" class="form-control @error('name') is-invalid @enderror"
-             value="{{ old('name', isset($cliente) ? $cliente->nome : '' ) }}"
-                name="name" required >
+                value="{{ old('name', isset($cliente) ? $cliente->nome : '') }}" name="name" required>
             @error('name')
                 <div class="invalid-feedback">{{ $message }}</div>
             @enderror
@@ -13,23 +12,17 @@
     </div>
 
     <div class="col-md-6">
-        <div class="form-group">
-            <label for="phone" class="col-form-label " style="color:black">Contacto:</label>
-            <input type="text" class="form-control @error('phone') is-invalid @enderror"
-            value="{{ old('phone', isset($cliente) ? $cliente->numero : '' ) }}"
-                id="phone" name="phone" required maxlength="15">
-            @error('phone')
-                <div class="invalid-feedback">{{ $message }}</div>
-            @enderror
-        </div>
+        <label  for="phone">Telefone</label>
+        <input maxlength="13" type="text" id="phone" name="phone" class="form-control">
+        <div class="invalid-feedback"></div>
     </div>
 
     <div class="col-md-6">
         <div class="form-group">
             <label for="province" class="col-form-label" style="color:black">Província:</label>
             <input type="text" class="form-control @error('province') is-invalid @enderror"
-            value="{{ old('province', isset($cliente) ? $cliente->provincia : '' ) }}"
-                id="province" name="province" required>
+                value="{{ old('province', isset($cliente) ? $cliente->provincia : '') }}" id="province"
+                name="province" required>
             @error('province')
                 <div class="invalid-feedback">{{ $message }}</div>
             @enderror
@@ -43,10 +36,28 @@
     </div>
 </div>
 
-@if($errors->any())
+@if ($errors->any())
     <script>
         $(document).ready(() => {
             $('#modalCreate').modal('show');
         });
     </script>
 @endif
+
+    @section('scripts')
+        <script>
+            document.getElementById('phone').addEventListener('input', function() {
+                const phone = this.value;
+                const phonePattern = /^\+?\d{9,15}$/;
+                const feedback = this.nextElementSibling;
+
+                if (!phonePattern.test(phone)) {
+                    this.classList.add('is-invalid');
+                    feedback.textContent = 'O número deve ter entre 9 e 15 dígitos.';
+                } else {
+                    this.classList.remove('is-invalid');
+                    feedback.textContent = '';
+                }
+            });
+        </script>
+    @endsection

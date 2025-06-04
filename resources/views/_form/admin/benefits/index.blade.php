@@ -1,4 +1,9 @@
 <div class="row">
+    <div class="col-md-12">
+        <div class="alert alert-info">
+            Saldo atual do orçamento: {{ number_format(\App\Models\Budget::sum('amount') ?? 0, 2, ',', '.') }} KZ
+        </div>
+    </div>
     <div class="col-md-6">
         <div class="form-group">
             <label for="employee_id" class="col-form-label" style="color:black">Funcionário:</label>
@@ -32,7 +37,7 @@
             <label for="amount" class="col-form-label" style="color:black">Valor:</label>
             <input type="number" step="0.01" class="form-control @error('amount') is-invalid @enderror"
                    value="{{ old('amount', isset($beneficio) ? $beneficio->amount : '') }}"
-                   name="amount">
+                   name="amount" id="amount">
             @error('amount')
                 <div class="invalid-feedback">{{ $message }}</div>
             @enderror
@@ -73,9 +78,35 @@
 </div>
 <div class="row">
     <div class="col-12" style="display: flex; justify-content: flex-end;">
-        <button type="submit" class="btn mb-2 btn-primary">Salvar</button>
+        <button type="submit" class="btn mb-2 btn-primary" id="submitButton">Salvar</button>
     </div>
 </div>
+
+@section('scripts')
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const amountInput = document.getElementById('amount');
+            const submitButton = document.getElementById('submitButton');
+            const currentBalance = {{ \App\Models\Budget::sum('amount') ?? 0 }};
+
+            function validateBalance() {
+                const amount = parseFloat(amountInput.value) || 0;
+                if (amount > currentBalance) {
+                    amountInput.classList.add('is-invalid');
+                    amountInput.nextElementSibling.textContent = 'Valor excede o saldo disponível.';
+                    submitButton.disabled = true;
+                } else {
+                    amountInput.classList.remove('is-invalid');
+                    amountInput.nextElementSibling.textContent = '';
+                    submitButton.disabled = false;
+                }
+            }
+
+            amountInput.addEventListener('input', validateBalance);
+            validateBalance();
+        });
+    </script>
+@endsection
 
 @if($errors->any())
     <script>

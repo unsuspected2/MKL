@@ -15,6 +15,7 @@ use App\Http\Controllers\Admin\Sale\MainController as SaleController;
 use App\Http\Controllers\Admin\Product\MainController as ProductController;
 use App\Http\Controllers\Admin\IdhMetric\MainController as IdhMetricController;
 use App\Http\Controllers\Admin\Saques\MainController as WithdrawalLoanController;
+use App\Http\Controllers\Admin\ReportController;
 use Illuminate\Support\Facades\Route;
 
 Route::group([
@@ -24,6 +25,8 @@ Route::group([
     Route::get('/dashboard', [MainController::class, 'index'])->middleware(['auth', 'verified'])->name('dashboard');
 
     Route::prefix('/gestao')->group(function () {
+
+        Route::get('/admin/reports/financial', [App\Http\Controllers\Admin\ReportController::class, 'financialReport'])->name('admin.reports.financial');
         // Clientes
         Route::prefix('/clientes')->group(function () {
             Route::get('/', [ClientController::class, 'index'])->name('admin.gestao.clientes');
@@ -89,6 +92,9 @@ Route::group([
             Route::put('editar/{id}', [ContractController::class, 'update'])->name('admin.gestao.contrato.editar');
             Route::delete('apagar/{id}', [ContractController::class, 'destroy'])->name('admin.gestao.contrato.apagar');
         });
+
+        Route::get('/admin/reports/financial', [ReportController::class, 'financialReport'])->name('admin.reports.financial');
+        Route::get('/admin/reports/sales', [ReportController::class, 'salesReport'])->name('admin.reports.sales');
 
         // Ordens de Produção
         Route::prefix('/ordens-producao')->group(function () {

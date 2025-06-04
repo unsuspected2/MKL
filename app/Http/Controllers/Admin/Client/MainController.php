@@ -7,11 +7,14 @@ use App\Models\Client;
 use Illuminate\Http\Request;
 use App\Models\Log;
 use App\Models\User;
+use App\Traits\LogsActivity;
+
 use Illuminate\Support\Facades\Validator;
 
 
 class MainController extends Controller
 {
+    use LogsActivity;
 
 
     /**
@@ -35,48 +38,34 @@ class MainController extends Controller
     /**
      * Store a newly created resource in DB.
      */
-    public function store(Request $request)
+   public function store(Request $request)
     {
-       /*  try { */
-        /*   $request->validate([
-            'name' => 'required|string|max:255',
-            'phone' => 'required|string|max:15',
-            'provincia' => 'required|string|max:100',
-
+        $validated = $request->validate([
+            'name' => 'required|string|max:255|regex:/^[a-zA-Z\s]+$/',
+            'phone' => 'required|string|regex:/^\+?\d{9,15}$/',
+            'province' => 'required|string|max:100',
         ], [
-            'name.required' => 'O campo nome é obrigatório.',
-            'phone.required' => 'O campo contacto é obrigatório.',
-            'province.required' => 'O campo é obrigatório.',
-        ]); */
-
-        /* CRIAÇÃO DE UM NOVO RESITRO NA TABELA CLIENTE */
-
-        $cliente = Client::create([
-            'nome' => $request->name,      // Atribua o valor do campo 'name' do request
-            'numero' => $request->phone,    // Atribua o valor do campo 'phone' do request
-            'provincia' => $request->province ,// Atribua o valor do campo 'province' do request
-            'imagem' => 'valor_teste',    // Atribua o valor do campo 'phone' do request
+            'name.required' => 'O nome é obrigatório.',
+            'name.regex' => 'O nome deve conter apenas letras e espaços.',
+            'phone.regex' => 'O número de telefone deve ter entre 9 e 15 dígitos.',
+            'province.required' => 'A província é obrigatória.',
         ]);
 
-        $user_id= auth()->id();
+        $client = Client::create([
+            'nome' => $validated['name'],
+            'numero' => $validated['phone'],
+            'provincia' => $validated['province'],
+            'imagem' => 'default.jpg',
+        ]);
 
-
-        /* CRIAÇÃO DO LOG */
-        Log::create([
-            'user_id' =>$user_id,
+        \App\Models\Log::create([
+            'user_id' => auth()->id(),
             'ip' => $request->ip(),
             'accao' => 'Cadastramento',
-            'id_user' => $user_id,
-            'descricao' => "Usuário {$user_id} cadastrou o/a cliente {$cliente->nome} com ID {$cliente->id}.",
+            'descricao' => "Cliente {$client->nome} (ID: {$client->id}) cadastrado.",
         ]);
 
-        return redirect()->back()->with('clienteCadastrado', 'Cadastrado');
-
-
-       /* } catch (\Exception $e) {
-          return response()->json(['message' => 'Houve um erro no servidor'], 500); */
-
-
+        return redirect()->back()->with('success', 'Cliente cadastrado com sucesso!');
     }
 
     /**

@@ -1,11 +1,11 @@
 @extends('layouts.admin.body')
 
 @section('title', 'Clientes')
-    
+
 @section('conteudo')
-   
+
 <div class="container-fluid">
- 
+
   <center><h3><strong><b>Clientes</b></strong></h3></center>
 
   <div class="row justify-content-center">
@@ -30,8 +30,8 @@
                         </div>
                         <div class="col-6 mt-3 mb-1 ml-5">
                             <button style="display: flex; justify-content: flex-end ; " class="btn btn-primary" data-toggle="modal" data-target="#modalCreate" data-whatever="@mdo">
-                              
-                                 <i class="ti ti-user-plus fe-16 m-1"></i> Cadastrar   
+
+                                 <i class="ti ti-user-plus fe-16 m-1"></i> Cadastrar
                             </button>
                         </div>
                     </div>
@@ -52,7 +52,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                   @foreach ($data['clientes'] as $cliente) 
+                   @foreach ($data['clientes'] as $cliente)
                         <tr>
                             <td>
                                 <div class="custom-control custom-checkbox">
@@ -65,10 +65,10 @@
                             <td>{{$cliente->numero}}</td>
                             <td>{{$cliente->provincia}}</td>
                             <td>{{ date('d/m/y', strtotime($cliente->created_at)) }}</td>
-                            
-                            
+
+
                             <td><button class="btn btn-sm dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                  <span class="text-muted sr-only">Acção</span> 
+                                  <span class="text-muted sr-only">Acção</span>
                                 </button>
                                  <div class="dropdown-menu dropdown-menu-right">
                                    <a class="dropdown-item"  href="#" data-toggle="modal" data-target="#modalEdit{{-$cliente->id}}">Editar</a>
@@ -78,7 +78,7 @@
                             </td>
                         </tr>
 
-                           
+
                             <div class="modal fade" id="modalEdit{{-$cliente->id}}" tabindex="-1" role="dialog" aria-labelledby="modalEditLabel" aria-hidden="true">
                                 <div class="modal-dialog" role="document">
                                     <div class="modal-content">
@@ -91,16 +91,16 @@
                                     {{-- corpo do modal de edição --}}
                                     <div class="modal-body">
                                         @include('admin.clients.edit.index')
-                                      
+
                                     </div>
                                 </div>
                           </div>
-                        
-                    @endforeach 
+
+                    @endforeach
 
                     @if ($data['clientes']->isEmpty())
                           <tr>
-                              <td colspan="10" class="text-warning text-center"><b>Nenhum registo encontrado!</b></td> 
+                              <td colspan="10" class="text-warning text-center"><b>Nenhum registo encontrado!</b></td>
                           </tr>
                     @endif
                 </tbody>
@@ -108,7 +108,7 @@
             </div>
             </div>
         </div> <!-- simple table -->
-       </div> <!-- end section --> 
+       </div> <!-- end section -->
     </div> <!-- .col-12 -->
     </div> <!-- .row -->
 </div> <!-- .container-fluid -->
@@ -136,11 +136,26 @@
     </div>
 </div>
 
-  
+
 <div class="py-6 px-6 text-center">
     <p class="mb-0 fs-4">&copy;  MK LDA 2025 <a class="pe-1 text-primary text-decoration-underline">❤️</a></p>
   </div>
 </div>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const phoneInput = document.getElementById('phone');
+    phoneInput.addEventListener('input', function () {
+        const phonePattern = /^\+?[1-9]\d{1,14}$/;
+        if (!phonePattern.test(phoneInput.value)) {
+            phoneInput.classList.add('is-invalid');
+            phoneInput.nextElementSibling.textContent = 'Número de telefone inválido.';
+        } else {
+            phoneInput.classList.remove('is-invalid');
+            phoneInput.nextElementSibling.textContent = '';
+        }
+    });
+});
+</script>
 
 @if (session('clienteCadastrado'))
 <script>

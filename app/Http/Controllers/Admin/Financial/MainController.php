@@ -11,7 +11,7 @@ class MainController extends Controller
 {
     public function index()
     {
-        $financeiros = Financial::all();
+        $financeiros = Financial::orderBy('id', 'desc')->get();
         return view('admin.financials.list.index', ['data' => ['financeiros' => $financeiros]]);
     }
 

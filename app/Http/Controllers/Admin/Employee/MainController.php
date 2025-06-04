@@ -20,45 +20,43 @@ class MainController extends Controller
 
 
     public function store(Request $request)
-    {
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|email|unique:employees,email',
-            'phone' => 'nullable|string|max:20',
-            'department' => 'required|string|max:255',
-            'hire_date' => 'required|date',
-            'salary' => 'required|numeric|min:0',
-            'position' => 'required|string|max:255',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:204800',
+{
+    $validated = $request->validate([
+        'name' => 'required|string|max:255',
+        'email' => 'required|email|unique:employees,email',
+        'phone' => 'nullable|string|max:20',
+        'department' => 'required|string|max:255',
+        'hire_date' => 'required|date',
+        'salary' => 'required|numeric|min:0',
+        'position' => 'required|string|max:255',
+        'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:204800',
+    ]);
+
+    DB::transaction(function () use ($validated, $request) {
+        if ($request->hasFile('image')) {
+            $validated['image'] = $request->file('image')->store('employees', 'public');
+        }
+
+        $employee = Employee::create($validated);
+
+        $budgetId = BudgetService::updateBudget(
+            $validated['salary'],
+            "Salário do funcionário {$employee->name}",
+            'Despesa',
+            $validated['hire_date'],
+            auth()->id()
+        );
+
+        Log::create([
+            'user_id' => auth()->id(),
+            'ip' => $request->ip(),
+            'accao' => 'Criação de Funcionário',
+            'descricao' => "Funcionário {$employee->name} criado.",
         ]);
+    });
 
-        DB::transaction(function () use ($validated, $request) {
-            if ($request->hasFile('image')) {
-                $validated['image'] = $request->file('image')->store('employees', 'public');
-            }
-
-            $employee = Employee::create($validated);
-
-            $currentBalance = Budget::sum('amount') ?? 0;
-            Budget::create([
-                'balance' => $currentBalance - $validated['salary'],
-                'description' => "Salário do funcionário {$employee->name}",
-                'transaction_type' => 'Despesa',
-                'amount' => -$validated['salary'],
-                'transaction_date' => $validated['hire_date'],
-                'user_id' => auth()->id(),
-            ]);
-
-            Log::create([
-                'user_id' => auth()->id(),
-                'ip' => $request->ip(),
-                'accao' => 'Criação de Funcionário',
-                'descricao' => "Funcionário {$employee->name} criado.",
-            ]);
-        });
-
-        return redirect()->route('admin.gestao.funcionarios')->with('funcionarioCadastrado', 'Funcionário cadastrado com sucesso.');
-    }
+    return redirect()->route('admin.gestao.funcionarios')->with('funcionarioCadastrado', 'Funcionário cadastrado com sucesso.');
+}
 
     public function update(Request $request, $id)
     {
